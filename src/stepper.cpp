@@ -29,22 +29,22 @@ void Stepper::disable(){
     digitalWrite(en_pin, 1);
 }
 
-void Stepper::set_speed(double rpm){
-    digitalWrite(dir_pin, (rpm < 0));
+void Stepper::set_speed(double rps){
+    digitalWrite(dir_pin, (rps < 0));
 
-    rpm = max(min(rpm, (double) MAX_STEPPER_RPM), (double) -MAX_STEPPER_RPM);
-    current_rpm = rpm;
-    rpm = abs(rpm);
-    double freq = rpm * STEPS_PER_REVOLUTION * microstep;
+    rps = max(min(rps, (double) MAX_STEPPER_RPS), (double) -MAX_STEPPER_RPS);
+    current_rps = rps;
+    rps = abs(rps);
+    double freq = rps * STEPS_PER_REVOLUTION * microstep;
 
     ledcChangeFrequency(pwm_channel, freq, STEP_PWM_RESOLUTION);
 }
 
-void Stepper::set_acceleration(double rpm_per_s){
-    accel = rpm_per_s;
+void Stepper::set_acceleration(double rps_per_s){
+    accel = rps_per_s;
 }
 
-bool Stepper::accelerate_to(double target_rpm){
+bool Stepper::accelerate_to(double target_rps){
     if(accel == 0)
         return 0;
     
@@ -56,17 +56,17 @@ bool Stepper::accelerate_to(double target_rpm){
     if(accel_last_time == millis())
         return 1;
 
-    double new_rpm = current_rpm + accel *  (double) (millis() - accel_last_time) / 1000.0;
+    double new_rps = current_rps + accel *  (double) (millis() - accel_last_time) / 1000.0;
 
-    if(abs(new_rpm) > abs(target_rpm)){
-        new_rpm = target_rpm;
-        set_speed(new_rpm);
+    if(abs(new_rps) > abs(target_rps)){
+        new_rps = target_rps;
+        set_speed(new_rps);
 
         accel_last_time = 0;
         return 0;
     }
 
-    set_speed(new_rpm);
+    set_speed(new_rps);
 
     accel_last_time = millis();
     return 1;
@@ -79,4 +79,23 @@ void Stepper::run(){
 
 void Stepper::stop(){
     ledcDetachPin(step_pin);
+}
+
+void Stepper::step(int8_t dir){
+    bool remebered_dir = digitalRead(dir_pin);
+    digitalWrite(dir_pin, (dir < 0));
+
+    digitalWrite(step_pin, 1);
+    delayMicroseconds(5);
+    digitalWrite(step_pin, 0);
+
+    digitalWrite(dir_pin, remebered_dir);
+}
+
+double Stepper::current_speed(){
+    return current_rps;
+}
+
+double Stepper::current_accel(){
+    return accel;
 }

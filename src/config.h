@@ -9,6 +9,9 @@
 #define DIR_PIN 16
 #define ENABLE_PIN 23
 
+#define WEIGHT_DOUT_PIN 27
+#define WEIGHT_SCK_PIN 14
+
 #define DISPLAY_ADDRESS 0x3C
 
 #define DISPLAY_WIDTH 128
@@ -24,6 +27,8 @@
 
 #define EEPROM_SIZE 2
 
+
+#define VIBRO_SPEED_RATIO 5
 
 
 #ifdef I2C_HIGH_PRFORMANCE
