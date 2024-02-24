@@ -39,11 +39,14 @@ class Function_container{
     uint64_t last_call = 0;
     uint8_t selected = 0;
     uint8_t scroll = 0;
+    bool first_call = true;
 
     template < class T >
     void single_spin_template(String name, T* variable, T min_lim, T max_lim, int st_x, int st_y, T fixed_step = 0);
 
     void list_spin_template(String list[], int options_n, String name = "", int x = 0, int y = 0);
+
+    void list_template(String list[], int options_n);
 
     void func0();
     void func1();

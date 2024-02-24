@@ -11,8 +11,8 @@ void UI::init(Menu* default_menu_, Display_SH1106 *display_, int font_h_, int ro
     display = display_;
     font_h = font_h_;
 
-    menu_window = Window(display, row_h_);
-    function_window = Window(display, row_h_);
+    menu_window = Window(display, font_h, row_h_);
+    function_window = Window(display, font_h, row_h_);
     
     set_function_containter();
 }
@@ -51,10 +51,10 @@ void UI::render_menu(Menu* menu){
 
     if(menu -> items[0].link_menu == nullptr){                   //disabling "home" which is nullptr in menu
         scroll = max(scroll, (uint8_t) 1);
-        render_scroll_bar(menu -> size, true);
+        menu_window.draw_scroll_bar(menu -> size, scroll, 1);
     }
     else
-        render_scroll_bar(menu -> size);
+        menu_window.draw_scroll_bar(menu -> size, scroll);
 
     for(uint8_t i = 0; i < min((int) menu -> size - scroll, menu_window.max_rows); i++){
         uint8_t i_absolute = i + scroll;
@@ -66,27 +66,6 @@ void UI::render_menu(Menu* menu){
 
         menu_window.print(name, 0, menu_window.row_h * (i + 1) - font_h);
     }
-}
-
-void UI::render_scroll_bar(uint8_t menu_item_n, bool is_home_menu){
-    if(menu_item_n == menu_window.max_rows && scroll == 0)
-        return;
-    
-    float pixels_per_item;
-    int scroll_bar_h, h_start;
-
-    int tmp_item_n = menu_item_n, tmp_scroll = scroll;
-    if(is_home_menu){
-        tmp_item_n--;
-        tmp_scroll--;
-    }
-
-    pixels_per_item = (float) (menu_window.h - 2) / tmp_item_n;
-    scroll_bar_h = pixels_per_item * menu_window.max_rows;
-    h_start = ceil(tmp_scroll * pixels_per_item) + 1;
-
-    display -> draw_line(display -> width - 4, 0, display -> width - 4, menu_window.h);
-    display -> draw_rect(display -> width - 2, h_start, 2, min(scroll_bar_h, menu_window.h - h_start - 1));
 }
 
 void UI::render_function(){
@@ -261,7 +240,7 @@ Menu_item::Menu_item(String name_, Menu_func* link){
 
 //----------------------------------WINDOW----------------------------------------
 
-Window::Window(Display_SH1106 *display_, int x_, int y_, int w_, int h_, int row_h_){
+Window::Window(Display_SH1106 *display_, int x_, int y_, int w_, int h_, int font_h_, int row_h_){
     display = display_;
     x = x_;
     y = y_;
@@ -270,9 +249,10 @@ Window::Window(Display_SH1106 *display_, int x_, int y_, int w_, int h_, int row
 
     row_h = row_h_;
     max_rows = h / row_h;
+    font_h = font_h_;
 }
 
-Window::Window(Display_SH1106 *display_, int x_, int y_, int row_h_){
+Window::Window(Display_SH1106 *display_, int x_, int y_, int font_h_, int row_h_){
     display = display_;
     x = x_;
     y = y_;
@@ -281,9 +261,10 @@ Window::Window(Display_SH1106 *display_, int x_, int y_, int row_h_){
 
     row_h = row_h_;
     max_rows = h / row_h;
+    font_h = font_h_;
 }
 
-Window::Window(Display_SH1106 *display_, int row_h_){
+Window::Window(Display_SH1106 *display_, int font_h_, int row_h_){
     display = display_;
     x = 0;
     y = 0;
@@ -292,6 +273,7 @@ Window::Window(Display_SH1106 *display_, int row_h_){
 
     row_h = row_h_;
     max_rows = h / row_h;
+    font_h = font_h_;
 }
 
 void Window::clear(){
@@ -336,6 +318,18 @@ void Window::draw_line(int x0, int y0, int x1, int y1, bool inverted){
 
 void Window::draw_rect(int x_, int y_, int w_, int h_, bool inverted, bool filled){
     display -> draw_rect(x + x_, y + y_, w_, h_, inverted, filled);
+}
+
+void Window::draw_scroll_bar(int16_t total, int16_t scroll, int16_t offset){
+    if(total == max_rows && scroll == 0)
+        return;
+
+    float pixels_per_item = (float) (h - 2) / (total - offset);
+    int scroll_bar_h = pixels_per_item * max_rows;
+    int h_start = ceil((scroll - offset) * pixels_per_item) + 1;
+
+    display -> draw_line(w - 4, 0, w - 4, h);
+    display -> draw_rect(w - 2, h_start, 2, min(scroll_bar_h, h - h_start - 1));
 }
 
 //--------------------------------------------------------------------------------

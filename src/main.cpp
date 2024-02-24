@@ -5,36 +5,19 @@
 #include "display.h"
 #include "ui.h"
 #include "menu_data.h"
-#include "stepper.h"
 
-#include "HX711.h"
+#include "dispenser.h"
 
 Encoder encoder(SA_PIN, SB_PIN, SW_PIN);
 Display_SH1106 display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 UI ui;
 
-Stepper stepper(STEP_PIN, DIR_PIN, ENABLE_PIN);
-HX711 weight;
+Dispenser dispenser;
 
 uint64_t update_timer = 0;
 
 void IRAM_ATTR encoder_interrupt(){
 	encoder.tick(); 
-}
-
-void vibro(double rot_speed, int work_time, int jerk_time){
-	double new_speed;
-	double t1 = work_time, t2 = jerk_time;
-	double fwd_speed = (t1 + t2) / (t1 + VIBRO_SPEED_RATIO * t2) * rot_speed;
-
-	if(millis() % (work_time + jerk_time) < work_time)
-		new_speed = fwd_speed;
-	else
-		new_speed = -fwd_speed * VIBRO_SPEED_RATIO;
-	
-	if(stepper.current_speed() == new_speed)
-		return;
-	stepper.set_speed(new_speed);
 }
 
 void setup() {
@@ -75,25 +58,12 @@ void setup() {
 	pinMode(MIXER_IN2, OUTPUT);
 	pinMode(MIXER_STANDBY, OUTPUT);
 
-
-	/*ledcSetup(1, 100000, 8);
-	ledcAttachPin(MIXER_PWM, 1);
-	ledcWrite(1, 255);*/
-	digitalWrite(MIXER_PWM, 1);
-	digitalWrite(MIXER_STANDBY, 1);
-
-	weight.begin(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
-	weight.set_scale();
-	weight.tare();
-
-	stepper.init(0, 32);
-	stepper.disable();
+	dispenser.init_stepper(STEP_PIN, DIR_PIN, ENABLE_PIN, MICROSTEPPING);
+	dispenser.init_mixer(MIXER_PWM, MIXER_IN1, MIXER_IN2, MIXER_STANDBY);
+	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
 }
 
-
 void loop() {
-	
-	
 	Encoder_data enc_data = encoder.get_updates();
 	
     if(enc_data.turns != 0)

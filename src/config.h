@@ -43,8 +43,11 @@
 
 #define I2C_HIGH_PRFORMANCE
 
-#define EEPROM_SIZE 2
+#define MICROSTEPPING 32
 
+#define DISPENSE_SLOTS_N 8
+
+#define EEPROM_SIZE 2
 
 #define VIBRO_SPEED_RATIO 5
 

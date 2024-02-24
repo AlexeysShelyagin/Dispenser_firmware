@@ -15,7 +15,7 @@
 #define FILTER_CLICKS true          // filter multiple triggering
 #define MIN_CLICK_INTERVAL 200
 
-#define DEFAULT_ROW_H 10
+#define DEFAULT_ROW_H 18
 
 #define MENU 0
 #define BACK 1
@@ -46,13 +46,13 @@ class Window{
 public:
     int x, y;
     int w, h;
-    int row_h, max_rows;
+    int row_h, max_rows, font_h;
     Display_SH1106 *display;
 
     Window() = default;
-    Window(Display_SH1106 *display_, int x_, int y_, int w_, int h_, int row_h_ = DEFAULT_ROW_H);
-    Window(Display_SH1106 *display_, int x_, int y_, int row_h_ = DEFAULT_ROW_H);
-    Window(Display_SH1106 *display_, int row_h_ = DEFAULT_ROW_H);
+    Window(Display_SH1106 *display_, int x_, int y_, int w_, int h_, int font_h_, int row_h_ = DEFAULT_ROW_H);
+    Window(Display_SH1106 *display_, int x_, int y_, int font_h_, int row_h_ = DEFAULT_ROW_H);
+    Window(Display_SH1106 *display_, int font_h_, int row_h_ = DEFAULT_ROW_H);
 
     void clear();
 
@@ -67,6 +67,8 @@ public:
     void draw_line(int x0, int y0, int x1, int y1, bool inverted = false);
     
     void draw_rect(int x_, int y_, int w_, int h_, bool inverted = false, bool filled = false);
+
+    void draw_scroll_bar(int16_t total, int16_t scroll, int16_t offset = 0);
 };
 
 //--------------------------------------------------------------------------------
@@ -95,7 +97,6 @@ class UI{
     void set_function_containter();
 
     void render_menu(Menu* menu);
-    void render_scroll_bar(uint8_t menu_item_n, bool is_home_menu = false);
     void render_function();
 
     void print_tree(Menu* menu, uint8_t deep);

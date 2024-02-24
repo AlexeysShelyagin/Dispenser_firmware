@@ -13,24 +13,31 @@ namespace menu{
 
     static String menu_list[] = {
         "Start",
-        "Stat",
+        "Tare",
         "Calibrate",
         "Settings",
+        "Custom feed",
+        "Clean",
+        "Update",
 
-        "Mass",
-        "Speed"
+        "Ammounts",
+        "Feed speed",
+        "Mixer speed",
+        "Encoder dir",
+        "Restore",
+        "About"
     };
 
-    static uint8_t menu_sizes[] = {4, 2};
+    static uint8_t menu_sizes[] = {7, 6};
 
     static uint8_t menu_linking[] = {
-        0, 1, 2, 1,
-        3, 4
+        0, 1, 2, 1, 3, 11, 9,
+        4, 5, 6, 7, 8, 10
     };
 
     static uint8_t menu_types[] = {
-        FUNC, FUNC, FUNC, MENU,
-        FUNC, FUNC
+        FUNC, FUNC, FUNC, MENU, FUNC, FUNC, FUNC,
+        FUNC, FUNC, FUNC, FUNC, FUNC, FUNC
     };
 
 }
@@ -40,9 +47,19 @@ home:                                   FUNC_??
     
 root:                               MENU_0
     Start:                              FUNC_0
-    Stat:                               FUNC_1
+    Tare:                               FUNC_1
     Calibrate:                          FUNC_2
-    Settings:                           FUNC_3
+    Settings:                       MENU_1
+        Ammounts:                       FUNC_4
+        Feed speed:                     FUNC_5
+        Mixer speed:                    FUNC_6
+        Endcoder dir:                   FUNC_7
+        Restore:                        FUNC_8
+        About:                          FUNC_10
+    Custom feed:                        FUNC_11
+    Clean:                              FUNC_3
+    Update:                             FUNC_9
+
     
 */
 

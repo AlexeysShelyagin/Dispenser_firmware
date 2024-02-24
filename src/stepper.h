@@ -17,6 +17,7 @@ class Stepper{
     uint64_t accel_last_time = 0;
 
 public:
+    Stepper() = default;
     Stepper(int step_pin_, int dir_pin_, int en_pin_ = -1);
 
     void init(uint8_t pwm_channel, uint8_t microstepping_divider = 1);

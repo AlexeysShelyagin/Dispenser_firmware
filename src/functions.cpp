@@ -86,6 +86,33 @@ void Function_container::list_spin_template(String list[], int options_n, String
     window -> print(name + ":< " + list[selected] + " >", x, y);
 }
 
+void Function_container::list_template(String list[], int options_n){
+    if(event -> moved){
+        if(event -> moved < 0)                                                   
+            selected = max(selected + event -> moved, 0);
+        else
+            selected = min(selected + event -> moved, options_n - 1);
+
+        if(selected >= scroll + window -> max_rows)
+            scroll = selected - window -> max_rows + 1;
+        else
+            scroll = min(selected, scroll);
+    }
+
+    for(uint8_t i = 0; i < min((int) options_n - scroll, window -> max_rows); i++){
+        uint8_t i_absolute = i + scroll;
+        String line;
+
+        if(i_absolute == selected)
+             line += ">";
+        line += list[i_absolute];
+
+        window -> print(line, 0, window -> row_h * (i + 1) - window -> font_h);
+    }
+
+    window -> draw_scroll_bar(options_n, scroll);
+}
+
 void Function_container::execute(int index){
     switch (index){
     case 0:
@@ -105,19 +132,33 @@ void Function_container::execute(int index){
 }
 
 void Function_container::func0(){
-    Serial.println(0);
-    if(event -> selected)
-        quit = true;
+    if(first_call){
+        scroll = selected = 1;
+        first_call = false;
+    }
+
+    String options[DISPENSE_SLOTS_N + 1];
+    options[0] = "back";
+    for(uint8_t i = 1; i <= DISPENSE_SLOTS_N; i++){
+        options[i] = "slot " + String(i) + ":    ";
+    }
+    list_template(options, DISPENSE_SLOTS_N + 1);
+
+    if(event -> selected){
+        if(selected == 0)
+            quit = true;
+        else{
+            
+        }
+    }
 }
 
 void Function_container::func1(){
-    Serial.println(1);
     if(event -> selected)
         quit = true;
 }
 
 void Function_container::func2(){
-    Serial.println(2);
     if(event -> selected)
         quit = true;
 }
