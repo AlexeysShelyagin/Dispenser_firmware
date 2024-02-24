@@ -9,6 +9,7 @@ UI::UI(Menu* default_menu_, Display_SH1106 *display_, int font_h_, int row_h_){
 void UI::init(Menu* default_menu_, Display_SH1106 *display_, int font_h_, int row_h_){
     default_menu = default_menu_;
     display = display_;
+    font_h = font_h_;
 
     menu_window = Window(display, row_h_);
     function_window = Window(display, row_h_);
@@ -48,21 +49,44 @@ void UI::render(){
 void UI::render_menu(Menu* menu){
     menu_window.clear();
 
-    if(menu -> items[0].link_menu == nullptr)                   //disabling "home" which is nullptr in menu
+    if(menu -> items[0].link_menu == nullptr){                   //disabling "home" which is nullptr in menu
         scroll = max(scroll, (uint8_t) 1);
+        render_scroll_bar(menu -> size, true);
+    }
+    else
+        render_scroll_bar(menu -> size);
 
     for(uint8_t i = 0; i < min((int) menu -> size - scroll, menu_window.max_rows); i++){
         uint8_t i_absolute = i + scroll;
-        String name = menu -> items[i_absolute].name;
+        String name;
 
-        int x_offset = 0;
-        if(i_absolute == current_item){
-             x_offset = SELECT_X_OFFSET;
-             // TODO: add some arrow or selecting area with rectangle to highlight selected item
-        }
+        if(i_absolute == current_item)
+             name += ">";
+        name += menu -> items[i_absolute].name;
 
-        menu_window.print(name, x_offset, menu_window.row_h * i);
+        menu_window.print(name, 0, menu_window.row_h * (i + 1) - font_h);
     }
+}
+
+void UI::render_scroll_bar(uint8_t menu_item_n, bool is_home_menu){
+    if(menu_item_n == menu_window.max_rows && scroll == 0)
+        return;
+    
+    float pixels_per_item;
+    int scroll_bar_h, h_start;
+
+    int tmp_item_n = menu_item_n, tmp_scroll = scroll;
+    if(is_home_menu){
+        tmp_item_n--;
+        tmp_scroll--;
+    }
+
+    pixels_per_item = (float) (menu_window.h - 2) / tmp_item_n;
+    scroll_bar_h = pixels_per_item * menu_window.max_rows;
+    h_start = ceil(tmp_scroll * pixels_per_item) + 1;
+
+    display -> draw_line(display -> width - 4, 0, display -> width - 4, menu_window.h);
+    display -> draw_rect(display -> width - 2, h_start, 2, min(scroll_bar_h, menu_window.h - h_start - 1));
 }
 
 void UI::render_function(){
@@ -280,6 +304,10 @@ int Window::get_text_width(String text){
 
 void Window::print(String text, int cur_x, int cur_y){
     display -> print(text, cur_x + x, cur_y + y);
+}
+
+void Window::write_char(char chr, int cur_x, int cur_y){
+    display -> write_char(chr, cur_x + x, cur_y + y);
 }
 
 void Window::print_right(String text, int cur_x, int cur_y){

@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "config.h"
+#include "config.h"				//must be always first include
 #include "encoder.h"
 #include "display.h"
 #include "ui.h"
@@ -70,29 +70,30 @@ void setup() {
 
 	ui.current_menu = ui.default_menu;
 
-	//weight.begin(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
+	pinMode(MIXER_PWM, OUTPUT);
+	pinMode(MIXER_IN1, OUTPUT);
+	pinMode(MIXER_IN2, OUTPUT);
+	pinMode(MIXER_STANDBY, OUTPUT);
+
+
+	/*ledcSetup(1, 100000, 8);
+	ledcAttachPin(MIXER_PWM, 1);
+	ledcWrite(1, 255);*/
+	digitalWrite(MIXER_PWM, 1);
+	digitalWrite(MIXER_STANDBY, 1);
+
+	weight.begin(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
+	weight.set_scale();
+	weight.tare();
 
 	stepper.init(0, 32);
-	stepper.enable();
-
-	/*
-	for(int i = 0; i < 1000; i++){
-		stepper.set_speed(1);
-		delayMicroseconds(4000);
-
-		stepper.set_speed(-5);
-		delayMicroseconds(1000);
-	}
-	*/
-	stepper.set_speed(1);
-	stepper.run();
-	delay(5000);
+	stepper.disable();
 }
 
 
 void loop() {
-	vibro(1, 16, 4);
-	/*
+	
+	
 	Encoder_data enc_data = encoder.get_updates();
 	
     if(enc_data.turns != 0)
@@ -105,5 +106,5 @@ void loop() {
 		ui.render();
 		update_timer = millis();
 	}
-	*/
+	
 }

@@ -11,6 +11,7 @@ void Display_SH1106::init(int adress){
 }
 
 void Display_SH1106::init_font(int size){
+    display -> setFont(&FreeSans9pt7b);
     display -> setTextSize(size);
     display -> setTextColor(WHITE);
     display -> cp437(true);
@@ -40,8 +41,13 @@ int Display_SH1106::get_text_height(String text){
 }
 
 void Display_SH1106::print(String text, int cur_x, int cur_y){
-    display -> setCursor(cur_x, cur_y);
+    display -> setCursor(cur_x, cur_y + FONT_H_OFFSET);
     display -> print(text);
+}
+
+void Display_SH1106::write_char(char chr, int cur_x, int cur_y){
+    display -> setCursor(cur_x, cur_y + FONT_H_OFFSET);
+    display -> write(chr);
 }
 
 void Display_SH1106::draw_line(int x0, int y0, int x1, int y1, bool inverted){

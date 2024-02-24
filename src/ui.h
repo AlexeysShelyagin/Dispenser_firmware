@@ -59,6 +59,7 @@ public:
     int get_text_width(String text);
 
     void print(String text, int cur_x = 0, int cur_y = 0);
+    void write_char(char chr, int cur_x = 0, int cur_y = 0);
     void print_right(String text, int cur_x = 0, int cur_y = 0);
     void print_fit(String text, int cur_x = 0, int cur_y = 0);
     void print_centered(String text, bool center_h = false, int cur_y = 0);
@@ -77,6 +78,7 @@ public:
 class UI{
     Display_SH1106 *display;
     uint8_t current_item = 1, scroll = 1;
+    int font_h;
 
     Window menu_window, function_window;
 
@@ -93,6 +95,7 @@ class UI{
     void set_function_containter();
 
     void render_menu(Menu* menu);
+    void render_scroll_bar(uint8_t menu_item_n, bool is_home_menu = false);
     void render_function();
 
     void print_tree(Menu* menu, uint8_t deep);
