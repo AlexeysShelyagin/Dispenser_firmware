@@ -55,6 +55,7 @@ void setup() {
 
 	ui.current_menu = ui.default_menu;
 
+	values -> init_EEPROM();
 	values -> load();
 
 	pinMode(MIXER_PWM, OUTPUT);
@@ -65,11 +66,6 @@ void setup() {
 	dispenser.init_stepper(STEP_PIN, DIR_PIN, ENABLE_PIN, MICROSTEPPING);
 	dispenser.init_mixer(MIXER_PWM, MIXER_IN1, MIXER_IN2, MIXER_STANDBY);
 	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
-
-
-	
-	dispenser.stop_mixer();
-	Serial.println("end");
 }
 
 void loop() {
@@ -86,5 +82,4 @@ void loop() {
 		ui.render();
 		update_timer = millis();
 	}
-	
 }

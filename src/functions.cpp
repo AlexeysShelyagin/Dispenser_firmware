@@ -86,8 +86,8 @@ void Function_container::list_spin_template(String list[], int options_n, String
     window -> print(name + ":< " + list[selected] + " >", x, y);
 }
 
-void Function_container::list_template(String list[], int options_n){
-    if(event -> moved){
+void Function_container::list_template(String list[], int options_n, bool handle_event){
+    if(handle_event && event -> moved){
         if(event -> moved < 0)                                                   
             selected = max(selected + event -> moved, 0);
         else
@@ -127,6 +127,9 @@ void Function_container::execute(int index){
     case 4:
         func4();
         break;
+    case 8:
+        func8();
+        break;
     default:
         Serial.println("Function with index " + String(index) + " not found");
         quit = true;
@@ -143,7 +146,7 @@ void Function_container::func0(){
     String options[DISPENSE_SLOTS_N + 1];
     options[0] = "back";
     for(uint8_t i = 1; i <= DISPENSE_SLOTS_N; i++){
-        options[i] = "slot " + String(i) + ":    " + String(values -> ammounts[i]);
+        options[i] = "slot " + String(i) + ":    " + String(values -> ammounts[i - 1]);
     }
     list_template(options, DISPENSE_SLOTS_N + 1);
 
@@ -175,16 +178,18 @@ void Function_container::func4(){
     String options[DISPENSE_SLOTS_N + 1];
     options[0] = "back";
     for(uint8_t i = 1; i <= DISPENSE_SLOTS_N; i++){
+        uint16_t ammount = values -> ammounts[i - 1];
+
         bool blink_state = (millis() / (BLINK_TIME * 2)) % 2;
         if(selected_to_change == i && blink_state)
-            options[i] = "slot " + String(i) + ":   " + String(values -> ammounts[i]) + " ";
+            options[i] = "slot " + String(i) + ":   " + String(ammount) + " ";
         else
-            options[i] = "slot " + String(i) + ": <" + String(values -> ammounts[i]) + ">";
+            options[i] = "slot " + String(i) + ": <" + String(ammount) + ">";
     }
-    list_template(options, DISPENSE_SLOTS_N + 1);
 
-    if(event -> selected){
-        if(selected_to_change == 0){
+    if(selected_to_change == 0){
+        list_template(options, DISPENSE_SLOTS_N + 1);
+        if(event -> selected){
             if(selected == 0){
                 quit = true;
                 values -> save();
@@ -192,7 +197,44 @@ void Function_container::func4(){
             else
                 selected_to_change = selected;
         }
-        else
-            selected_to_change = 0;
     }
+    else{
+        list_template(options, DISPENSE_SLOTS_N + 1, false);
+        if(event -> selected)
+            selected_to_change = 0;
+        if(event -> moved){
+            int16_t new_ammount = values -> ammounts[selected_to_change - 1] + event -> moved;
+            
+            if(new_ammount < 0)
+                new_ammount = 0;
+            if(new_ammount > MAX_DISPENSE_AMMOUNT)
+                new_ammount = MAX_DISPENSE_AMMOUNT;
+
+            values -> ammounts[selected_to_change - 1] = new_ammount;
+        }
+    }
+}
+
+void Function_container::func8(){
+    window -> print_centered("Restore to");
+    window -> print_centered("defaults?", false, window -> row_h);
+
+    String brackets = "<        >";
+    if((millis() / (BLINK_TIME * 2)) % 2)
+        brackets = "";
+
+    int check_h = window -> h - window -> row_h;
+    String options[] = {"NO", "YES"};
+    window -> print_centered(options[selected], false, check_h);
+    window -> print_centered(brackets, false, check_h);
+
+    if(event -> selected){
+        if(selected != 0){
+            values -> clear();
+        }
+        quit = true;
+    }
+    
+    if(event -> moved)
+        selected = !selected;
 }
