@@ -39,6 +39,7 @@ class Function_container{
     uint64_t last_call = 0;
     uint8_t selected = 0;
     uint8_t scroll = 0;
+    uint8_t selected_to_change = 0;
     bool first_call = true;
 
     template < class T >
@@ -51,6 +52,7 @@ class Function_container{
     void func0();
     void func1();
     void func2();
+    void func4();
     
 public:
     Window* window;
@@ -61,7 +63,6 @@ public:
     Function_container() = default;
 
     void execute(int index);
-    void execute_page(int index);
 };
 
 #endif

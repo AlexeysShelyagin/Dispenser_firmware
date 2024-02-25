@@ -1,19 +1,21 @@
 #include "values.h"
 
 void Values::load(){
-    //EEPROM.get(EEPROM_SETTINGS_ADDR, *val1*);
-    //EEPROM.get(EEPROM_SETTINGS_ADDR + 2, *val2*);
+    for(uint8_t i = 0; i < DISPENSE_SLOTS_N; i++)
+        EEPROM.get(i * 2, ammounts[i]);
+    
 }
 
 void Values::save(){
-    //EEPROM.put(EEPROM_SETTINGS_ADDR, *val1*);
-    //EEPROM.put(EEPROM_SETTINGS_ADDR + 2, *val2*);
+    for(uint8_t i = 0; i < DISPENSE_SLOTS_N; i++)
+        EEPROM.put(i * 2, ammounts[i]);
 
     EEPROM.commit();
 }
 
 void Values::clear(){
-    for (int i = 0; i < EEPROM_SIZE; i++)
+    uint16_t eeprom_size = DISPENSE_SLOTS_N * 2;
+    for (int i = 0; i < eeprom_size; i++)
         EEPROM.write(i, 0);
 
     EEPROM.commit();

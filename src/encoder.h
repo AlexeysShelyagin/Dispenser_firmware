@@ -1,7 +1,9 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 
-#define MAX_BUFFER_SIZE 100
+#ifndef ENCODER_BUFFER_SIZE
+    #define ENCODER_BUFFER_SIZE 20
+#endif
 
 #include <Arduino.h>
 
@@ -14,15 +16,17 @@ public:
 };
 
 class Encoder{
-    bool buffer[MAX_BUFFER_SIZE][3];
+    bool buffer[ENCODER_BUFFER_SIZE][2];
+    bool click = false, last_click_state = false;
     int buff_size;
 
     int sa_pin, sb_pin, sw_pin;
 
     bool ready_to_read = true;
-    bool unpressed = true;
 
-    uint64_t tick_time_filter = 0;
+    uint64_t tick_time_filter = 0, click_time_filter = 0;
+
+    void handle_click();
 
     int get_rotation(bool v1, bool v2);
     bool get_click(bool val);

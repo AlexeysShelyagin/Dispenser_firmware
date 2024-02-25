@@ -124,6 +124,9 @@ void Function_container::execute(int index){
     case 2:
         func2();
         break;
+    case 4:
+        func4();
+        break;
     default:
         Serial.println("Function with index " + String(index) + " not found");
         quit = true;
@@ -140,7 +143,7 @@ void Function_container::func0(){
     String options[DISPENSE_SLOTS_N + 1];
     options[0] = "back";
     for(uint8_t i = 1; i <= DISPENSE_SLOTS_N; i++){
-        options[i] = "slot " + String(i) + ":    ";
+        options[i] = "slot " + String(i) + ":    " + String(values -> ammounts[i]);
     }
     list_template(options, DISPENSE_SLOTS_N + 1);
 
@@ -161,4 +164,35 @@ void Function_container::func1(){
 void Function_container::func2(){
     if(event -> selected)
         quit = true;
+}
+
+void Function_container::func4(){
+    if(first_call){
+        scroll = selected = 1;
+        first_call = false;
+    }
+
+    String options[DISPENSE_SLOTS_N + 1];
+    options[0] = "back";
+    for(uint8_t i = 1; i <= DISPENSE_SLOTS_N; i++){
+        bool blink_state = (millis() / (BLINK_TIME * 2)) % 2;
+        if(selected_to_change == i && blink_state)
+            options[i] = "slot " + String(i) + ":   " + String(values -> ammounts[i]) + " ";
+        else
+            options[i] = "slot " + String(i) + ": <" + String(values -> ammounts[i]) + ">";
+    }
+    list_template(options, DISPENSE_SLOTS_N + 1);
+
+    if(event -> selected){
+        if(selected_to_change == 0){
+            if(selected == 0){
+                quit = true;
+                values -> save();
+            }
+            else
+                selected_to_change = selected;
+        }
+        else
+            selected_to_change = 0;
+    }
 }

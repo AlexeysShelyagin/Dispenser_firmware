@@ -34,6 +34,8 @@
 #define FONT_H_OFFSET 12
 #define ROW_HEIGHT 18
 
+#define BLINK_TIME 250
+
 #define DISP_UPDATE_INTERVAL 1000
 
 //----------------------------------------------------------
@@ -44,12 +46,14 @@
 #define I2C_HIGH_PRFORMANCE
 
 #define MICROSTEPPING 32
+#define INVERT_MIXER 0
+#define INVERT_AUGER 0
 
 #define DISPENSE_SLOTS_N 8
 
-#define EEPROM_SIZE 2
-
 #define VIBRO_SPEED_RATIO 5
+
+#define ENCODER_BUFFER_SIZE 20
 
 
 //-------------------------OPTIMIZATION----------------------------

@@ -25,37 +25,40 @@ int Encoder::get_rotation(bool v1, bool v2){
     return 0;
 }
 
-bool Encoder::get_click(bool val){
-    if(unpressed && !val){
-        unpressed = false;
-        return true;
-    }
-
-    if(val)
-        unpressed = true;
-    
-    return false;
-}
-
 void Encoder::tick(){
-    if(tick_time_filter + 1 >= millis()) return;
+    handle_click();
+
+    if(tick_time_filter + 1 >= millis())
+        return;
     tick_time_filter = millis();
 
-    if(buff_size >= MAX_BUFFER_SIZE) return;
+    if(buff_size >= ENCODER_BUFFER_SIZE) return;
     
     buffer[buff_size][0] = digitalRead(sa_pin);
     buffer[buff_size][1] = digitalRead(sb_pin);
-    buffer[buff_size][2] = digitalRead(sw_pin);
     buff_size++;
 };
 
+void Encoder::handle_click(){
+    bool state = !digitalRead(sw_pin);
+    if(state && last_click_state != state){
+        if(click_time_filter + 50 >= millis())
+            return;
+        click_time_filter = millis();
+
+        click = true;
+    }
+    last_click_state = state;
+}
+
 Encoder_data Encoder::get_updates(){
     Encoder_data response;
-    for(int i = 0; i < buff_size; i++){    
+    for(int i = 0; i < buff_size; i++)
         response.turns += get_rotation(buffer[i][0], buffer[i][1]);
-        response.clicks += (int) get_click(buffer[i][2]);
-    }
+    response.clicks += click;
+
     buff_size = 0;
+    click = false;
 
     return response;
 }

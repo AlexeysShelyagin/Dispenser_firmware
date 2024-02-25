@@ -8,6 +8,7 @@
 class Values{
 public:
     // put values here
+    uint16_t ammounts[DISPENSE_SLOTS_N];
 
     Values() = default;
 

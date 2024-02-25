@@ -5,12 +5,14 @@
 #include "display.h"
 #include "ui.h"
 #include "menu_data.h"
+#include "values.h"
 
 #include "dispenser.h"
 
 Encoder encoder(SA_PIN, SB_PIN, SW_PIN);
 Display_SH1106 display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 UI ui;
+Values *values = new Values();
 
 Dispenser dispenser;
 
@@ -53,6 +55,8 @@ void setup() {
 
 	ui.current_menu = ui.default_menu;
 
+	values -> load();
+
 	pinMode(MIXER_PWM, OUTPUT);
 	pinMode(MIXER_IN1, OUTPUT);
 	pinMode(MIXER_IN2, OUTPUT);
@@ -61,6 +65,11 @@ void setup() {
 	dispenser.init_stepper(STEP_PIN, DIR_PIN, ENABLE_PIN, MICROSTEPPING);
 	dispenser.init_mixer(MIXER_PWM, MIXER_IN1, MIXER_IN2, MIXER_STANDBY);
 	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
+
+
+	
+	dispenser.stop_mixer();
+	Serial.println("end");
 }
 
 void loop() {
@@ -68,8 +77,9 @@ void loop() {
 	
     if(enc_data.turns != 0)
         ui.move(enc_data.turns);
-    if(enc_data.clicks != 0)
+    if(enc_data.clicks != 0){
         ui.select();
+	}
 	
 	
 	if(ui.event_done || update_timer + DISP_UPDATE_INTERVAL >= millis()){
