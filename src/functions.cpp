@@ -118,6 +118,9 @@ void Function_container::execute(int index){
     case 0:
         func0();
         break;
+    case 1:
+        func1();
+        break;
     case 2:
         func2();
         break;
@@ -157,6 +160,12 @@ void Function_container::func0(){
     }
 }
 
+void Function_container::func1(){
+    single_spin_template < float > ("mass: ", &(values -> reference_mass), 0, MAX_REFERENCE_MASS, 0, 0, 5);
+    if(event -> selected)
+        values -> save();
+}
+
 void Function_container::func2(){
     if(event -> selected && !first_call){
         values -> dispenser_mode = Dispenser_modes::CALIBRATE;
@@ -168,7 +177,7 @@ void Function_container::func2(){
         first_call = false;
     }
     else{
-        window -> print_centered("Put " + String(REFERENCE_WEIGHT) + "g");
+        window -> print_centered("Put " + String(values -> reference_mass, 1) + "g");
         window -> print_centered("click to", false, window -> row_h);
         window -> print_centered("calibrate", false, window -> row_h * 2);
     }
@@ -236,6 +245,7 @@ void Function_container::func8(){
     if(event -> selected){
         if(selected != 0){
             values -> clear();
+            values -> dispenser_mode = Dispenser_modes::RESTORE;
         }
         quit = true;
     }

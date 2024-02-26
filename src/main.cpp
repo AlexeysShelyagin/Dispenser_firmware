@@ -103,9 +103,11 @@ void loop() {
 		if(values -> dispenser_mode == Dispenser_modes::TARE)
 			dispenser.tare();
 		if(values -> dispenser_mode == Dispenser_modes::CALIBRATE){
-			values -> weight_factor = dispenser.calibrate_weight(REFERENCE_WEIGHT);
+			values -> weight_factor = dispenser.calibrate_weight(values -> reference_mass);
 			values -> save();
 		}
+		if(values -> dispenser_mode == Dispenser_modes::RESTORE)
+			dispenser.restore();
 
 		values -> dispenser_mode = Dispenser_modes::NONE;
 		ui.event_done = true;

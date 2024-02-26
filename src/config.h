@@ -51,7 +51,8 @@
 
 #define DISPENSE_SLOTS_N 8
 #define MAX_DISPENSE_AMMOUNT 500
-#define REFERENCE_WEIGHT 50
+#define DEFAULT_REFERENCE_MASS 50
+#define MAX_REFERENCE_MASS 500
 
 #define VIBRO_SPEED_RATIO 5
 
@@ -70,6 +71,7 @@ enum Dispenser_modes{
     DISPENSE,
     TARE,
     CALIBRATE,
+    RESTORE,
     CLEAN,
     MIX
 };

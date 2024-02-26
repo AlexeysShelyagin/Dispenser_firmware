@@ -97,6 +97,14 @@ double Dispenser::calibrate_weight(float reference){
 }
 
 bool Dispenser::dispense(float ammount){
+    if(weight.get_scale() == 0){
+        display -> clear();
+        display -> print("Not calibrated");
+        display -> show();
+        delay(1500);
+        return false;
+    }
+
     tare();
 
     float current_weight = 0;
@@ -117,4 +125,8 @@ bool Dispenser::dispense(float ammount){
             break;
     }
     return true;
+}
+
+void Dispenser::restore(){
+    weight.set_scale(0);
 }

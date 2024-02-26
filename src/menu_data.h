@@ -21,7 +21,7 @@ namespace menu{
 
         "Ammounts",
         "Feed speed",
-        "Mixer speed",
+        "Ref. mass",
         "Encoder dir",
         "Restore",
         "About"
@@ -31,7 +31,7 @@ namespace menu{
 
     static uint8_t menu_linking[] = {
         0, 2, 1, 3, 6, 9,
-        4, 5, 6, 7, 8, 10
+        4, 5, 1, 7, 8, 10
     };
 
     static uint8_t menu_types[] = {
@@ -50,6 +50,7 @@ root:                               MENU_0
     Settings:                       MENU_1
         Ammounts:                       FUNC_4
         Feed speed:                     FUNC_5
+        Reference mass                  FUNC_1
         Endcoder dir:                   FUNC_7
         Restore:                        FUNC_8
         About:                          FUNC_10

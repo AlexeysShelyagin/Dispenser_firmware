@@ -39,15 +39,11 @@ void Encoder::tick(){
 };
 
 void Encoder::tick_button(){
-    bool state = !digitalRead(sw_pin);
-    if(state && last_click_state == false){
-        if(click_time_filter + 150 >= millis())
-            return;
-        click_time_filter = millis();
+    if(click_time_filter + 100 >= millis())
+        return;
+    click_time_filter = millis();
 
-        click = true;
-    }
-    last_click_state = state;
+    click = true;
 }
 
 Encoder_data Encoder::get_updates(){
