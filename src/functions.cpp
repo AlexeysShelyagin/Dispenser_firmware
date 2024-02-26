@@ -118,9 +118,6 @@ void Function_container::execute(int index){
     case 0:
         func0();
         break;
-    case 1:
-        func1();
-        break;
     case 2:
         func2();
         break;
@@ -160,14 +157,21 @@ void Function_container::func0(){
     }
 }
 
-void Function_container::func1(){
-    if(event -> selected)
-        quit = true;
-}
-
 void Function_container::func2(){
-    if(event -> selected)
+    if(event -> selected && !first_call){
+        values -> dispenser_mode = Dispenser_modes::CALIBRATE;
         quit = true;
+    }
+    
+    if(first_call){
+        values -> dispenser_mode = Dispenser_modes::TARE;
+        first_call = false;
+    }
+    else{
+        window -> print_centered("Put " + String(REFERENCE_WEIGHT) + "g");
+        window -> print_centered("click to", false, window -> row_h);
+        window -> print_centered("calibrate", false, window -> row_h * 2);
+    }
 }
 
 void Function_container::func4(){

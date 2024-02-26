@@ -13,7 +13,6 @@ namespace menu{
 
     static String menu_list[] = {
         "Start",
-        "Tare",
         "Calibrate",
         "Settings",
         "Custom feed",
@@ -28,15 +27,15 @@ namespace menu{
         "About"
     };
 
-    static uint8_t menu_sizes[] = {7, 6};
+    static uint8_t menu_sizes[] = {6, 6};
 
     static uint8_t menu_linking[] = {
-        0, 1, 2, 1, 3, 6, 9,
+        0, 2, 1, 3, 6, 9,
         4, 5, 6, 7, 8, 10
     };
 
     static uint8_t menu_types[] = {
-        FUNC, FUNC, FUNC, MENU, FUNC, FUNC, FUNC,
+        FUNC, FUNC, MENU, FUNC, FUNC, FUNC,
         FUNC, FUNC, FUNC, FUNC, FUNC, FUNC
     };
 
@@ -47,7 +46,6 @@ home:                                   FUNC_??
     
 root:                               MENU_0
     Start:                              FUNC_0
-    Tare:                               FUNC_1
     Calibrate:                          FUNC_2
     Settings:                       MENU_1
         Ammounts:                       FUNC_4

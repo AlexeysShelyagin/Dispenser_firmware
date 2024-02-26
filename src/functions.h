@@ -50,7 +50,6 @@ class Function_container{
     void list_template(String list[], int options_n, bool handle_event = true);
 
     void func0();
-    void func1();
     void func2();
     void func4();
     void func8();

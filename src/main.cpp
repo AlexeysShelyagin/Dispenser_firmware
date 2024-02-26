@@ -65,6 +65,7 @@ void setup() {
 
 	values -> init_EEPROM();
 	values -> load();
+	values -> dump();
 
 	pinMode(MIXER_PWM, OUTPUT);
 	pinMode(MIXER_IN1, OUTPUT);
@@ -73,7 +74,9 @@ void setup() {
 
 	dispenser.init_stepper(STEP_PIN, DIR_PIN, ENABLE_PIN, MICROSTEPPING);
 	dispenser.init_mixer(MIXER_PWM, MIXER_IN1, MIXER_IN2, MIXER_STANDBY);
-	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN);
+	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN, values -> weight_factor);
+	dispenser.init_display(&display);
+	dispenser.init_encoder(&encoder);
 }
 
 void loop() {
@@ -93,20 +96,18 @@ void loop() {
 
 	if(values -> dispenser_mode != Dispenser_modes::NONE){
 		if(values -> dispenser_mode == Dispenser_modes::DISPENSE){
-			uint64_t start = millis();
-			while(millis() < start + 3000){
-				display.clear();
-				display.print("Dispensing:\n" + String(values -> ammount) + "\n" + String((millis() - start) / 1000));
-				display.show();
+			dispenser.dispense(values -> ammount);
 
-				enc_data = encoder.get_updates();
-				if(enc_data.clicks != 0)
-					break;
-			}
-
-			values -> dispenser_mode = Dispenser_modes::NONE;
 			values -> ammount = 0;
-			ui.event_done = true;
 		}
+		if(values -> dispenser_mode == Dispenser_modes::TARE)
+			dispenser.tare();
+		if(values -> dispenser_mode == Dispenser_modes::CALIBRATE){
+			values -> weight_factor = dispenser.calibrate_weight(REFERENCE_WEIGHT);
+			values -> save();
+		}
+
+		values -> dispenser_mode = Dispenser_modes::NONE;
+		ui.event_done = true;
 	}
 }

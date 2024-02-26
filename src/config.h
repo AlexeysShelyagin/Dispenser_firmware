@@ -30,7 +30,7 @@
 #define DISPLAY_HEIGHT 64
 #define FONT_SIZE 1
 
-#define FONT_HEIGHT 14
+#define FONT_HEIGHT 16
 #define FONT_H_OFFSET 12
 #define ROW_HEIGHT 18
 
@@ -51,6 +51,7 @@
 
 #define DISPENSE_SLOTS_N 8
 #define MAX_DISPENSE_AMMOUNT 500
+#define REFERENCE_WEIGHT 50
 
 #define VIBRO_SPEED_RATIO 5
 
@@ -67,6 +68,8 @@
 enum Dispenser_modes{
     NONE = 1,
     DISPENSE,
+    TARE,
+    CALIBRATE,
     CLEAN,
     MIX
 };

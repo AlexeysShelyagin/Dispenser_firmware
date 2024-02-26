@@ -21,8 +21,17 @@ void Dispenser::init_mixer(int pwm_pin, int in1_pin, int in2_pin, int standby_pi
     ledcWrite(1, 0);
 }
 
-void Dispenser::init_weight(int dout_pin, int sck_pin){
+void Dispenser::init_weight(int dout_pin, int sck_pin, double factor){
     weight.begin(dout_pin, sck_pin);
+    weight.set_scale(factor);
+}
+
+void Dispenser::init_display(Display_SH1106* display_){
+    display = display_;
+}
+
+void Dispenser::init_encoder(Encoder* encoder_){
+    encoder = encoder_;
 }
 
 void Dispenser::vibro(double rot_speed, int work_time, int jerk_time){
@@ -65,4 +74,47 @@ void Dispenser::stop_mixer(){
     digitalWrite(mixer_in2, 0);
 
     ledcWrite(1, 0);
+}
+
+void Dispenser::tare(){
+    display -> clear();
+    display -> print("Tare...");
+    display -> show();
+
+    weight.tare();
+}
+
+double Dispenser::calibrate_weight(float reference){
+    display -> clear();
+    display -> print("Calibrating...");
+    display -> show();
+
+    float calibrate_val = weight.get_value(20);
+    double weight_factor = calibrate_val / reference;
+    weight.set_scale(weight_factor);
+
+    return weight_factor;
+}
+
+bool Dispenser::dispense(float ammount){
+    tare();
+
+    float current_weight = 0;
+    while(true){
+        current_weight = max(weight.get_units(), (float) 0);
+        float ready = current_weight / ammount;
+
+        display -> clear();
+        display -> print("Dispensing:");
+        display -> print(String(current_weight, 1), 0, FONT_HEIGHT + 2);
+        display -> draw_rect(1, FONT_HEIGHT * 2 + 4, display -> width - 2, 6);
+        display -> draw_rect(3, FONT_HEIGHT *2  + 6, floor((display -> width - 5) * ready), 2);
+        display -> print("Click to abort", 0, display -> height - FONT_HEIGHT);
+        display -> show();
+
+        Encoder_data enc_data = encoder -> get_updates();
+        if(enc_data.clicks != 0)
+            break;
+    }
+    return true;
 }
