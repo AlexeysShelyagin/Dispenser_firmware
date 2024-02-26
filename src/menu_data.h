@@ -31,7 +31,7 @@ namespace menu{
     static uint8_t menu_sizes[] = {7, 6};
 
     static uint8_t menu_linking[] = {
-        0, 1, 2, 1, 3, 11, 9,
+        0, 1, 2, 1, 3, 6, 9,
         4, 5, 6, 7, 8, 10
     };
 
@@ -52,11 +52,10 @@ root:                               MENU_0
     Settings:                       MENU_1
         Ammounts:                       FUNC_4
         Feed speed:                     FUNC_5
-        Mixer speed:                    FUNC_6
         Endcoder dir:                   FUNC_7
         Restore:                        FUNC_8
         About:                          FUNC_10
-    Custom feed:                        FUNC_11
+    Custom feed:                        FUNC_6
     Clean:                              FUNC_3
     Update:                             FUNC_9
 

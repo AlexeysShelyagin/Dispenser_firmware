@@ -18,8 +18,18 @@ Dispenser dispenser;
 
 uint64_t update_timer = 0;
 
-void IRAM_ATTR encoder_interrupt(){
+void IRAM_ATTR encoder_tick(){
 	encoder.tick(); 
+}
+
+void IRAM_ATTR encoder_click(){
+	encoder.tick_button(); 
+}
+
+void enable_encoder_interrupt(){
+	attachInterrupt(digitalPinToInterrupt(SA_PIN), encoder_tick, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(SB_PIN), encoder_tick, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(SW_PIN), encoder_click, RISING);
 }
 
 void setup() {
@@ -42,10 +52,8 @@ void setup() {
 	pinMode(SA_PIN, INPUT_PULLUP);
 	pinMode(SB_PIN, INPUT_PULLUP);
 	pinMode(SW_PIN, INPUT_PULLUP);
-
-	attachInterrupt(digitalPinToInterrupt(SA_PIN), encoder_interrupt, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(SB_PIN), encoder_interrupt, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(SW_PIN), encoder_interrupt, CHANGE);
+	
+	enable_encoder_interrupt();
     
 	ui.init(
         load_menu(menu::menu_list, menu::menu_sizes, menu::menu_linking, menu::menu_types, menu::menu_n),
@@ -81,5 +89,24 @@ void loop() {
 	if(ui.event_done || update_timer + DISP_UPDATE_INTERVAL >= millis()){
 		ui.render();
 		update_timer = millis();
+	}
+
+	if(values -> dispenser_mode != Dispenser_modes::NONE){
+		if(values -> dispenser_mode == Dispenser_modes::DISPENSE){
+			uint64_t start = millis();
+			while(millis() < start + 3000){
+				display.clear();
+				display.print("Dispensing:\n" + String(values -> ammount) + "\n" + String((millis() - start) / 1000));
+				display.show();
+
+				enc_data = encoder.get_updates();
+				if(enc_data.clicks != 0)
+					break;
+			}
+
+			values -> dispenser_mode = Dispenser_modes::NONE;
+			values -> ammount = 0;
+			ui.event_done = true;
+		}
 	}
 }

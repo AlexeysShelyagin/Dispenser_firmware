@@ -154,7 +154,8 @@ void Function_container::func0(){
         if(selected == 0)
             quit = true;
         else{
-            
+            values -> dispenser_mode = Dispenser_modes::DISPENSE;
+            values -> ammount = values -> ammounts[selected - 1];
         }
     }
 }

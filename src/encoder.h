@@ -26,8 +26,6 @@ class Encoder{
 
     uint64_t tick_time_filter = 0, click_time_filter = 0;
 
-    void handle_click();
-
     int get_rotation(bool v1, bool v2);
     bool get_click(bool val);
 public:
@@ -35,6 +33,7 @@ public:
     Encoder(int sa_pin_, int sb_pin_, int sw_pin_);
 
     void tick();
+    void tick_button();
 
     Encoder_data get_updates();
     Encoder_data get_updates_normalized();

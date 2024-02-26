@@ -26,7 +26,6 @@ int Encoder::get_rotation(bool v1, bool v2){
 }
 
 void Encoder::tick(){
-    handle_click();
 
     if(tick_time_filter + 1 >= millis())
         return;
@@ -39,10 +38,10 @@ void Encoder::tick(){
     buff_size++;
 };
 
-void Encoder::handle_click(){
+void Encoder::tick_button(){
     bool state = !digitalRead(sw_pin);
-    if(state && last_click_state != state){
-        if(click_time_filter + 50 >= millis())
+    if(state && last_click_state == false){
+        if(click_time_filter + 150 >= millis())
             return;
         click_time_filter = millis();
 

@@ -56,8 +56,27 @@
 
 #define ENCODER_BUFFER_SIZE 20
 
+//----------------------------------------------------------
 
-//-------------------------OPTIMIZATION----------------------------
+
+//-------------------------MODES----------------------------
+
+#ifndef DISPENSER_MODES
+#define DISPENSER_MODES
+
+enum Dispenser_modes{
+    NONE = 1,
+    DISPENSE,
+    CLEAN,
+    MIX
+};
+
+#endif
+
+//----------------------------------------------------------
+
+
+//----------------------OPTIMIZATION------------------------
 
 #ifdef I2C_HIGH_PRFORMANCE
 
