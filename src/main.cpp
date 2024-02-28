@@ -6,6 +6,7 @@
 #include "ui.h"
 #include "menu_data.h"
 #include "values.h"
+#include "updater.h"
 
 #include "dispenser.h"
 
@@ -14,6 +15,7 @@ Display_SH1106 display(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 UI ui;
 Values *values = new Values();
 
+Client_updater updater;
 Dispenser dispenser;
 
 uint64_t update_timer = 0;
@@ -48,6 +50,7 @@ void setup() {
 	display.init_font(FONT_SIZE);
     display.clear();
     display.show();
+	Serial.println("display initialized");
 
 	pinMode(SA_PIN, INPUT_PULLUP);
 	pinMode(SB_PIN, INPUT_PULLUP);
@@ -59,13 +62,16 @@ void setup() {
         load_menu(menu::menu_list, menu::menu_sizes, menu::menu_linking, menu::menu_types, menu::menu_n),
         &display, FONT_HEIGHT, ROW_HEIGHT
     );
-    ui.tree();
+    //ui.tree();
 
 	ui.current_menu = ui.default_menu;
 
 	values -> init_EEPROM();
 	values -> load();
 	values -> dump();
+
+	updater.init_display(&display);
+	updater.check_updates();
 
 	pinMode(MIXER_PWM, OUTPUT);
 	pinMode(MIXER_IN1, OUTPUT);
@@ -108,6 +114,11 @@ void loop() {
 		}
 		if(values -> dispenser_mode == Dispenser_modes::RESTORE)
 			dispenser.restore();
+		if(values -> dispenser_mode == Dispenser_modes::CLEAN)
+			dispenser.clean();
+		if(values -> dispenser_mode == Dispenser_modes::UPDATE){
+			updater.start_upload();
+		}
 
 		values -> dispenser_mode = Dispenser_modes::NONE;
 		ui.event_done = true;

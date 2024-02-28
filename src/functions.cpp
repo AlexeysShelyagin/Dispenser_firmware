@@ -23,13 +23,14 @@ void Spin_value < T >::set_limits(T min, T max){
 }
 
 template < class T >
-void Spin_value < T >::change(T n){
+void Spin_value < T >::change(double n){
     if(!limited){
         *value += n * step;
         return;
     }
 
     if(n > 0) *value = min(static_cast < T > (*value + n * step), limit_max);
+    else if(-(n * step) > *value) *value = 0;
     else *value = max(static_cast < T > (*value + n * step), limit_min);
 }
 
@@ -124,11 +125,20 @@ void Function_container::execute(int index){
     case 2:
         func2();
         break;
+    case 3:
+        func3();
+        break;
     case 4:
         func4();
         break;
+    case 6:
+        func6();
+        break;
     case 8:
         func8();
+        break;
+    case 9:
+        func9();
         break;
     default:
         Serial.println("Function with index " + String(index) + " not found");
@@ -183,6 +193,11 @@ void Function_container::func2(){
     }
 }
 
+void Function_container::func3(){
+    values -> dispenser_mode = Dispenser_modes::CLEAN;
+    quit = true;
+}
+
 void Function_container::func4(){
     if(first_call){
         scroll = selected = 1;
@@ -229,6 +244,20 @@ void Function_container::func4(){
     }
 }
 
+void Function_container::func6(){
+    single_spin_template < uint16_t > ("weight: ", &(values -> ammount), 0, MAX_DISPENSE_AMMOUNT, 0, 0, 1);
+
+    bool blink = (millis() / (BLINK_TIME * 2)) % 2;
+    if(values -> ammount == 0){
+        if(blink)
+            window -> print_centered("back", false, window -> h - window -> row_h);
+    }
+    else{
+        if(quit)
+            values -> dispenser_mode = Dispenser_modes::DISPENSE;
+    }
+}
+
 void Function_container::func8(){
     window -> print_centered("Restore to");
     window -> print_centered("defaults?", false, window -> row_h);
@@ -250,6 +279,29 @@ void Function_container::func8(){
         quit = true;
     }
     
+    if(event -> moved)
+        selected = !selected;
+}
+
+void Function_container::func9(){
+    window -> print_centered("Update");
+    window -> print_centered("firmware?", false, window -> row_h);
+
+    String brackets = "<        >";
+    if((millis() / (BLINK_TIME * 2)) % 2)
+        brackets = "";
+
+    int check_h = window -> h - window -> row_h;
+    String options[] = {"NO", "YES"};
+    window -> print_centered(options[selected], false, check_h);
+    window -> print_centered(brackets, false, check_h);
+
+    if(event -> selected){
+        if(selected != 0)
+            values -> dispenser_mode = Dispenser_modes::UPDATE;
+        quit = true;
+    }
+
     if(event -> moved)
         selected = !selected;
 }

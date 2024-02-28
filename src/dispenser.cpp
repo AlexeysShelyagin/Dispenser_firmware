@@ -127,6 +127,19 @@ bool Dispenser::dispense(float ammount){
     return true;
 }
 
+void Dispenser::clean(){
+    while(true){
+        display -> clear();
+        display -> print("Cleaning...");
+        display -> print("Click to stop", 0, display -> height - FONT_HEIGHT);
+        display -> show();
+
+        Encoder_data enc_data = encoder -> get_updates();
+        if(enc_data.clicks != 0)
+            break;
+    }
+}
+
 void Dispenser::restore(){
     weight.set_scale(0);
 }

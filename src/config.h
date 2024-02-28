@@ -61,6 +61,15 @@
 //----------------------------------------------------------
 
 
+//--------------------------WiFi----------------------------
+
+#define HOST_SSID "Dispenser"
+#define HOST_PASSWORD "12345678"
+#define WEB_SERVER_PORT 80
+
+//----------------------------------------------------------
+
+
 //-------------------------MODES----------------------------
 
 #ifndef DISPENSER_MODES
@@ -73,7 +82,8 @@ enum Dispenser_modes{
     CALIBRATE,
     RESTORE,
     CLEAN,
-    MIX
+    MIX,
+    UPDATE
 };
 
 #endif

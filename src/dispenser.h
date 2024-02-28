@@ -44,6 +44,7 @@ public:
     double calibrate_weight(float reference);
 
     bool dispense(float ammount);
+    void clean();
 
     void restore();
 };

@@ -30,7 +30,7 @@ public:
 
     void set_size(int w_, int h_);
     void set_limits(T min, T max);
-    void change(T n);
+    void change(double n);
 
     void render(Window *window);
 };
@@ -52,8 +52,11 @@ class Function_container{
     void func0();
     void func1();
     void func2();
+    void func3();
     void func4();
+    void func6();
     void func8();
+    void func9();
     
 public:
     Window* window;

@@ -12,6 +12,8 @@ void Values::load(){
     EEPROM.get(DISPENSE_SLOTS_N * 2 + sizeof(float), reference_mass);
     if(reference_mass == 0)
         reference_mass = DEFAULT_REFERENCE_MASS;
+    
+    EEPROM.get(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2, firmware_update);
 }
 
 void Values::save(){
@@ -20,6 +22,8 @@ void Values::save(){
 
     EEPROM.put(DISPENSE_SLOTS_N * 2, weight_factor);
     EEPROM.put(DISPENSE_SLOTS_N * 2 + sizeof(float), reference_mass);
+
+    EEPROM.put(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2, firmware_update);
 
     EEPROM.commit();
 
