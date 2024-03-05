@@ -14,6 +14,10 @@ void Values::load(){
         reference_mass = DEFAULT_REFERENCE_MASS;
     
     EEPROM.get(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2, firmware_update);
+
+    EEPROM.get(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2 + sizeof(bool), feed_speed);
+    if(feed_speed == 0)
+        feed_speed = DEFAULT_FEED_SPEED;
 }
 
 void Values::save(){
@@ -24,6 +28,8 @@ void Values::save(){
     EEPROM.put(DISPENSE_SLOTS_N * 2 + sizeof(float), reference_mass);
 
     EEPROM.put(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2, firmware_update);
+
+    EEPROM.put(DISPENSE_SLOTS_N * 2 + sizeof(float) * 2 + sizeof(bool), feed_speed);
 
     EEPROM.commit();
 

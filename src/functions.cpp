@@ -35,8 +35,13 @@ void Spin_value < T >::change(double n){
 }
 
 template < class T >
-void Spin_value < T >::render(Window *window){
-    window -> print(name + ":< " + String(*value) + " >", x, y);
+void Spin_value < T >::render(Window *window, bool selected){
+    String bracket_open = ":< ", bracket_close = " >";
+    if(selected && (millis() / (BLINK_TIME * 2)) % 2){
+        bracket_open = ":   ";
+        bracket_close = "";
+    }
+    window -> print(name + bracket_open + String(*value) + bracket_close, x, y);
 }
 
 template < class T >
@@ -58,7 +63,7 @@ void Function_container::single_spin_template(String name, T* variable, T min_li
     uint64_t timeout = millis() - last_call;
     if(event -> moved != 0) last_call = millis();
 
-    int step;
+    T step;
     if(fixed_step == 0) 
         step = ceil((max_lim - min_lim) * SPIN_SPEED_FACTOR / timeout);
     else 
@@ -72,7 +77,7 @@ void Function_container::single_spin_template(String name, T* variable, T min_li
 
     spin_val.change(event -> moved);
     
-    spin_val.render(window);
+    spin_val.render(window, true);
 }
 
 void Function_container::list_spin_template(String list[], int options_n, String name, int x, int y){
@@ -131,8 +136,14 @@ void Function_container::execute(int index){
     case 4:
         func4();
         break;
+    case 5:
+        func5();
+        break;
     case 6:
         func6();
+        break;
+    case 7:
+        func7();
         break;
     case 8:
         func8();
@@ -171,7 +182,7 @@ void Function_container::func0(){
 }
 
 void Function_container::func1(){
-    single_spin_template < float > ("mass: ", &(values -> reference_mass), 0, MAX_REFERENCE_MASS, 0, 0, 5);
+    single_spin_template < float > ("mass", &(values -> reference_mass), 0, MAX_REFERENCE_MASS, 0, 0, 5);
     if(event -> selected)
         values -> save();
 }
@@ -244,8 +255,14 @@ void Function_container::func4(){
     }
 }
 
+void Function_container::func5(){
+    single_spin_template < float > ("spd", &(values -> feed_speed), 0.2, MAX_FEED_SPEED, 0, 0, 0.1);
+    if(event -> selected)
+        values -> save();
+}
+
 void Function_container::func6(){
-    single_spin_template < uint16_t > ("weight: ", &(values -> ammount), 0, MAX_DISPENSE_AMMOUNT, 0, 0, 1);
+    single_spin_template < uint16_t > ("weight", &(values -> ammount), 0, MAX_DISPENSE_AMMOUNT, 0, 0, 1);
 
     bool blink = (millis() / (BLINK_TIME * 2)) % 2;
     if(values -> ammount == 0){
@@ -256,6 +273,24 @@ void Function_container::func6(){
         if(quit)
             values -> dispenser_mode = Dispenser_modes::DISPENSE;
     }
+}
+
+void Function_container::func7(){
+    String lines[] = {
+        "Dispenser by:",
+        "DevelTeam",
+        "",
+        "Firmware ver.:",
+        FIRMWARE_VERSION,
+        "",
+        "MAC:",
+        (values -> mac_addr).substring(0, 9),
+        (values -> mac_addr).substring(8)
+    };
+    list_template(lines, 9);
+
+    if(event -> selected)
+        quit = true;
 }
 
 void Function_container::func8(){

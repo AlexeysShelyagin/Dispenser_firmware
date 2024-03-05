@@ -46,17 +46,21 @@ void setup() {
 	Wire.setClock(I2C_CLKRATE);
 #endif
 
+
 	display.init(DISPLAY_ADDRESS);
 	display.init_font(FONT_SIZE);
     display.clear();
     display.show();
+
 	Serial.println("display initialized");
 
 	pinMode(SA_PIN, INPUT_PULLUP);
 	pinMode(SB_PIN, INPUT_PULLUP);
 	pinMode(SW_PIN, INPUT_PULLUP);
-	
+	pinMode(TOUCH_PANEL_PIN, INPUT);
+
 	enable_encoder_interrupt();
+	attachInterrupt(digitalPinToInterrupt(TOUCH_PANEL_PIN), encoder_click, RISING);
     
 	ui.init(
         load_menu(menu::menu_list, menu::menu_sizes, menu::menu_linking, menu::menu_types, menu::menu_n),
@@ -70,8 +74,11 @@ void setup() {
 	values -> load();
 	values -> dump();
 
+	values -> mac_addr = WiFi.macAddress();
+
 	updater.init_display(&display);
 	updater.check_updates();
+
 
 	pinMode(MIXER_PWM, OUTPUT);
 	pinMode(MIXER_IN1, OUTPUT);
@@ -83,6 +90,8 @@ void setup() {
 	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN, values -> weight_factor);
 	dispenser.init_display(&display);
 	dispenser.init_encoder(&encoder);
+
+	Serial.println("Test updater");
 }
 
 void loop() {

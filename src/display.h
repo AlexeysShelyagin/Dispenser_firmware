@@ -5,13 +5,13 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH1106.h>
-
 #include <Fonts/FreeSans9pt7b.h>
+
+#include "config.h"
+
 #ifndef FONT_H_OFFSET
     #define FONT_H_OFFSET 0
 #endif
-
-#include "config.h"
 
 class Display_SH1106{
 public:

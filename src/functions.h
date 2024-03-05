@@ -32,7 +32,7 @@ public:
     void set_limits(T min, T max);
     void change(double n);
 
-    void render(Window *window);
+    void render(Window *window, bool selected = false);
 };
 
 class Function_container{
@@ -54,7 +54,9 @@ class Function_container{
     void func2();
     void func3();
     void func4();
+    void func5();
     void func6();
+    void func7();
     void func8();
     void func9();
     

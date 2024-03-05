@@ -7,6 +7,8 @@
 #define SB_PIN 19
 #define SW_PIN 5
 
+#define TOUCH_PANEL_PIN 4
+
 #define STEP_PIN 17
 #define DIR_PIN 16
 #define ENABLE_PIN 23
@@ -41,24 +43,47 @@
 //----------------------------------------------------------
 
 
+//-----------------------DISPENSING-------------------------
+
+#define INVERT_MIXER 0
+#define INVERT_AUGER 0
+#define ACCURATE_SPEED_FACTOR 0.25
+
+#define DEFAULT_FEED_SPEED 0.5
+#define MIN_FEED_SPEED 0.2
+#define MAX_FEED_SPEED 1.5
+
+#define DISPENSING_PRECISION 1
+
+#define VIBRO_IN_T 20
+#define VIBRO_OUT_T 4
+#define VIBRO_SPEED_RATIO 3
+// (VIBRO_IN_T - VIBRO_SPEED_RATIO * VIBRO_OUT_T) must be > 0
+
+//----------------------------------------------------------
+
+
 //-------------------------OTHER----------------------------
 
 #define I2C_HIGH_PRFORMANCE
 
 #define MICROSTEPPING 32
-#define INVERT_MIXER 0
-#define INVERT_AUGER 0
 
 #define DISPENSE_SLOTS_N 8
 #define MAX_DISPENSE_AMMOUNT 500
 #define DEFAULT_REFERENCE_MASS 50
 #define MAX_REFERENCE_MASS 500
 
-#define VIBRO_SPEED_RATIO 5
-
 #define ENCODER_BUFFER_SIZE 20
 
 //----------------------------------------------------------
+
+
+//----------------------------------------------------------
+
+#define FIRMWARE_VERSION "1.0.0"
+
+//-------------------------About----------------------------
 
 
 //--------------------------WiFi----------------------------

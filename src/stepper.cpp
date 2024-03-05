@@ -14,7 +14,8 @@ void Stepper::init(uint8_t pwm_channel_, uint8_t microstepping_divider){
     pinMode(dir_pin, OUTPUT);
     pinMode(en_pin, OUTPUT);
 
-    ledcSetup(pwm_channel, 0, STEP_PWM_RESOLUTION);
+    ledcSetup(pwm_channel, 10, STEP_PWM_RESOLUTION);
+    ledcWrite(pwm_channel, 0);
 }
 
 void Stepper::enable(){

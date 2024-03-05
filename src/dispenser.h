@@ -7,6 +7,7 @@
 
 #include "display.h"
 #include "encoder.h"
+#include "values.h"
 
 #ifndef INVERT_AUGER
     #define INVERT_AUGER 0
@@ -23,7 +24,12 @@ class Dispenser{
     Display_SH1106 *display = nullptr;
     Encoder *encoder = nullptr;
 
-    void vibro(double rot_speed, int work_time, int jerk_time);
+    static void vibro(void *pvParameters);
+
+    struct Vibro_data{
+        Dispenser* dispenser;
+        uint16_t work_t, jerk_t;
+    };
 
 public:
     Dispenser() = default;
@@ -34,7 +40,9 @@ public:
     void init_display(Display_SH1106* display_);
     void init_encoder(Encoder* encoder_);
 
-    void start_auger(double speed, bool dir = 0);
+    void start_auger(double speed);
+    void set_auger_speed(double speed);
+    double get_auger_speed();
     void stop_auger();
 
     void start_mixer(uint8_t pwm = 255);

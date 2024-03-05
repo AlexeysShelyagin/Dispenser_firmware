@@ -135,20 +135,71 @@ void Client_updater::start_upload(){
 }
 
 void Client_updater::check_updates(){
-    Serial.println(values -> firmware_update);
     if(!values -> firmware_update)
         return;
     
     display -> clear();
-    display -> print("Updating...");
+    display -> print("Found update...");
     display -> show();
 
     Serial.println("Firmware updating started");
 
+    SPIFFS.begin(true);
+    File root = SPIFFS.open("/");
+    File firmware = root.openNextFile();
+    bool found = false;
+    while(firmware){
+        if(String(firmware.name()) != "firmware.bin")
+            firmware = root.openNextFile();
+        else{
+            found = true;
+            break;
+        }
+    }
+    if(!found){
+        display -> clear();
+        display -> print("firmware.bin\nnot found");
+        display -> show();
+        Serial.println("ERROR: firmware.bin not found, update failed");
+
+        delay(1000);
+        return;
+    }
+    root.close();
+
+    size_t file_size = firmware.size();
+
+    if(!Update.begin(file_size)){
+        display -> clear();
+        display -> print("Update failed");
+        display -> show();
+        Serial.println("ERROR: cannot initialize update");
+
+        delay(1000);
+        return;
+    }
+
+    display -> clear();
+    display -> print("Updating...");
+    display -> show();
+    Update.writeStream(firmware);
+
+    if(Update.end()){
+        display -> clear();
+        display -> print("Updated!");
+        display -> show();
+        Serial.println("Firmware updated sucessfuly");
+    }
+    else{
+        display -> clear();
+        display -> print("Update failed");
+        display -> show();
+        Serial.println("ERROR: update write stream failed    CODE: " + String(Update.getError()));
+    }
+
+    firmware.close();
     values -> firmware_update = false;
     values -> save();
     
-    while (true){
-        delay(100);
-    }
+    ESP.restart();
 }
