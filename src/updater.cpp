@@ -1,5 +1,8 @@
 #include "updater.h"
 
+bool uploading = false, completed = false, failed = false;
+uint32_t uploaded_size = 0;
+
 String human_readable_size(const size_t bytes) {
   if (bytes < 1024) return String(bytes) + " B";
   else if (bytes < (1024 * 1024)) return String(bytes / 1024.0) + " KB";
@@ -17,6 +20,33 @@ void Client_updater::display_info(String text){
     display -> show();
 }
 
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    if(!index){
+        Serial.println("Recieving file: " +  String(filename));
+        if (!Update.begin(UPDATE_SIZE_UNKNOWN)){
+            Serial.println("ERROR: update begin failed    CODE: " + String(Update.getError()));
+            failed = true;
+            return;
+        }
+        uploading = true;
+    }
+    if(len){
+        Update.write(data, len);
+
+        uploaded_size = index + len;
+    }
+    if(final){
+        if (!Update.end(true)) {
+            Serial.println("ERROR: updload ended incorrectly    CODE: " + String(Update.getError()));
+            failed = true;
+            return;
+        } 
+
+        Serial.println("Updated successfully! (" + human_readable_size(index + len) + ")");
+        completed = true;
+    }
+}
+
 void Client_updater::start_upload(){
     display_info("preparing...");
 
@@ -28,82 +58,42 @@ void Client_updater::start_upload(){
     Serial.println("     IP:" + page_ip);
     Serial.println("-----------------------");
 
-    if (!MDNS.begin(MDNS_NAME)){
-        Serial.println("ERROR: setting up MDNS responder");
-        display_info("Failed create server");
+    AsyncWebServer *server = new AsyncWebServer(WEB_SERVER_PORT);
 
-        delay(1000);
-        return;
-    }
+    server -> on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request -> send(200, "text/html", loginIndex);
+    });
 
-    WebServer server(WEB_SERVER_PORT);
-    
+    server -> on("/serverIndex", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request -> send(200, "text/html", serverIndex); 
+    });
+
+    server -> on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request -> send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+        ESP.restart();
+    }, handleUpload);
+
+    server -> begin();
     Serial.println("Server created");
     display_info(page_ip + "\nWaiting a file");
 
-
-    server.on("/", HTTP_GET, [&server]() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/html", loginIndex);
-    });
-
-    server.on("/serverIndex", HTTP_GET, [&server]() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/html", serverIndex); 
-    });
-
-    server.on("/update", HTTP_POST, [&server]() {
-        server.sendHeader("Connection", "close");
-        server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
-        ESP.restart();
-    }, [&server, this](){
-        HTTPUpload& upload = server.upload();
-
-        if(upload.status == UPLOAD_FILE_START){
-            Serial.println("Recieving file: " +  String(upload.filename));
-            if (!Update.begin(UPDATE_SIZE_UNKNOWN)){
-                Serial.println("ERROR: update begin failed    CODE: " + String(Update.getError()));
-                display_info("Upload failed");
-
-                delay(1000);
-                exit = true;
-                return;
-            }
-            Serial.println(">>>" + human_readable_size(upload.totalSize));
-        } 
-        if(upload.status == UPLOAD_FILE_WRITE){
-            Update.write(upload.buf, upload.currentSize);
-
-            display_info("Uploading:\n" + human_readable_size(upload.currentSize));
-        } 
-        if(upload.status == UPLOAD_FILE_END){
-            if (!Update.end(true)) {
-                Serial.println("ERROR: updload ended incorrectly    CODE: " + String(Update.getError()));
-                display_info("Upload failed");
-
-                delay(1000);
-                exit = true;
-                return;
-            } 
-
-            Serial.println("Updated successfully! (" + human_readable_size(upload.totalSize) + ")");
-            display_info("Completed!\nRestarting...");
-            delay(1000);
-
-            exit = true;
-            success = true;
+    while(!completed){
+        if(uploading){
+            display_info("Uploading:\n" + human_readable_size(uploaded_size));
         }
-    });
-
-    server.begin();
-
-    exit = false;
-    success = false;
-    while(!exit){
-        server.handleClient();
-        delay(1);
+        if(failed){
+            display_info("Upload failed");
+            delay(4000);
+            break;
+        }
     }
 
-    if(success)
+    server -> end();
+    WiFi.softAPdisconnect(true);
+
+    if(completed){
+        display_info("Completed!\nRestarting...");
+        delay(1000);
         ESP.restart();
+    }
 }

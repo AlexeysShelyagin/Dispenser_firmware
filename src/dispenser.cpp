@@ -170,7 +170,6 @@ bool Dispenser::dispense(float ammount){
                 (double) MAX_FEED_SPEED),
                 (double) MIN_FEED_SPEED
             );
-            Serial.println(values -> feed_speed);
         }
 
         if(millis() - changing_spd > 500)

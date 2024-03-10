@@ -95,6 +95,9 @@
 #define HOST_PASSWORD "12345678"
 #define WEB_SERVER_PORT 80
 
+#define UPDATE_USERNAME "admin"
+#define UPDATE_PASSWORD "admin"
+
 //----------------------------------------------------------
 
 

@@ -92,8 +92,6 @@ void setup() {
 	dispenser.init_weight(WEIGHT_DOUT_PIN, WEIGHT_SCK_PIN, values -> weight_factor);
 	dispenser.init_display(&display);
 	dispenser.init_encoder(&encoder);
-
-	Serial.println("Test upload");
 }
 
 void loop() {
