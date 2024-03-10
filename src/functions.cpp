@@ -151,6 +151,9 @@ void Function_container::execute(int index){
     case 9:
         func9();
         break;
+    case 10:
+        func10();
+        break;
     default:
         Serial.println("Function with index " + String(index) + " not found");
         quit = true;
@@ -266,7 +269,7 @@ void Function_container::func6(){
 
     bool blink = (millis() / (BLINK_TIME * 2)) % 2;
     if(values -> ammount == 0){
-        if(blink)
+        if(!blink)
             window -> print_centered("back", false, window -> h - window -> row_h);
     }
     else{
@@ -339,4 +342,9 @@ void Function_container::func9(){
 
     if(event -> moved)
         selected = !selected;
+}
+
+void Function_container::func10(){
+    values -> dispenser_mode = Dispenser_modes::MIX;
+    quit = true;
 }

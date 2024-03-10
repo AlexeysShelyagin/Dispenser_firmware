@@ -28,10 +28,14 @@ void IRAM_ATTR encoder_click(){
 	encoder.tick_button(); 
 }
 
+void IRAM_ATTR touch_panel(){
+	encoder.force_button(); 
+}
+
 void enable_encoder_interrupt(){
 	attachInterrupt(digitalPinToInterrupt(SA_PIN), encoder_tick, CHANGE);
     attachInterrupt(digitalPinToInterrupt(SB_PIN), encoder_tick, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(SW_PIN), encoder_click, RISING);
+    attachInterrupt(digitalPinToInterrupt(SW_PIN), encoder_click, CHANGE);
 }
 
 void setup() {
@@ -60,7 +64,7 @@ void setup() {
 	pinMode(TOUCH_PANEL_PIN, INPUT);
 
 	enable_encoder_interrupt();
-	attachInterrupt(digitalPinToInterrupt(TOUCH_PANEL_PIN), encoder_click, RISING);
+	attachInterrupt(digitalPinToInterrupt(TOUCH_PANEL_PIN), touch_panel, RISING);
     
 	ui.init(
         load_menu(menu::menu_list, menu::menu_sizes, menu::menu_linking, menu::menu_types, menu::menu_n),
@@ -77,8 +81,6 @@ void setup() {
 	values -> mac_addr = WiFi.macAddress();
 
 	updater.init_display(&display);
-	updater.check_updates();
-
 
 	pinMode(MIXER_PWM, OUTPUT);
 	pinMode(MIXER_IN1, OUTPUT);
@@ -91,7 +93,7 @@ void setup() {
 	dispenser.init_display(&display);
 	dispenser.init_encoder(&encoder);
 
-	Serial.println("Test updater");
+	Serial.println("Test upload");
 }
 
 void loop() {
@@ -125,6 +127,8 @@ void loop() {
 			dispenser.restore();
 		if(values -> dispenser_mode == Dispenser_modes::CLEAN)
 			dispenser.clean();
+		if(values -> dispenser_mode == Dispenser_modes::MIX)
+			dispenser.mix();
 		if(values -> dispenser_mode == Dispenser_modes::UPDATE){
 			updater.start_upload();
 		}

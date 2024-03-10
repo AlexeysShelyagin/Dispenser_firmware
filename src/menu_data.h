@@ -15,6 +15,7 @@ namespace menu{
         "Start",
         "Calibrate",
         "Custom feed",
+        "Mix",
         "Settings",
         "Clean",
         "Update",
@@ -26,15 +27,15 @@ namespace menu{
         "About"
     };
 
-    static uint8_t menu_sizes[] = {6, 5};
+    static uint8_t menu_sizes[] = {7, 5};
 
     static uint8_t menu_linking[] = {
-        0, 2, 6, 1, 3, 9,
+        0, 2, 6, 10, 1, 3, 9,
         4, 5, 1, 8, 7
     };
 
     static uint8_t menu_types[] = {
-        FUNC, FUNC, FUNC, MENU, FUNC, FUNC,
+        FUNC, FUNC, FUNC, FUNC, MENU, FUNC, FUNC,
         FUNC, FUNC, FUNC, FUNC, FUNC
     };
 
@@ -47,6 +48,7 @@ root:                               MENU_0
     Start:                              FUNC_0
     Calibrate:                          FUNC_2
     Custom feed:                        FUNC_6
+    Mix:                                FUNC_10
     Settings:                       MENU_1
         Ammounts:                       FUNC_4
         Feed speed:                     FUNC_5

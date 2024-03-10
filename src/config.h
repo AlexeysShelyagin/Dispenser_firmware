@@ -47,13 +47,15 @@
 
 #define INVERT_MIXER 0
 #define INVERT_AUGER 0
-#define ACCURATE_SPEED_FACTOR 0.25
 
-#define DEFAULT_FEED_SPEED 0.5
-#define MIN_FEED_SPEED 0.2
+#define DEFAULT_FEED_SPEED 1.5
+#define MIN_FEED_SPEED 0.5
 #define MAX_FEED_SPEED 1.5
 
-#define DISPENSING_PRECISION 1
+//#define SLOW_DOWN_AMMOUNT 5
+//#define SLOW_DOWN_FACTOR 0.25
+#define DISPENSING_STOP_DIFFERENCE 0.2
+#define DISPENSING_PRECISION 1.0
 
 #define VIBRO_IN_T 20
 #define VIBRO_OUT_T 4
@@ -88,6 +90,7 @@
 
 //--------------------------WiFi----------------------------
 
+#define MDNS_NAME "esp32"
 #define HOST_SSID "Dispenser"
 #define HOST_PASSWORD "12345678"
 #define WEB_SERVER_PORT 80

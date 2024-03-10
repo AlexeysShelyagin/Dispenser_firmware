@@ -57,6 +57,7 @@ double Dispenser::get_auger_speed(){
 
 void Dispenser::stop_auger(){
     stepper.stop();
+    stepper.disable();
 }
 
 void Dispenser::start_mixer(uint8_t pwm){
@@ -119,6 +120,8 @@ void Dispenser::vibro(void *pvParameters){
 }
 
 bool Dispenser::dispense(float ammount){
+    if(ammount == 0)
+        return true;
     if(weight.get_scale() == 0){
         display -> clear();
         display -> print("Not calibrated");
@@ -137,8 +140,9 @@ bool Dispenser::dispense(float ammount){
     double init_spd = values -> feed_speed;
     uint64_t changing_spd = 0;
     float current_weight = 0;
+    float spd_factor = 1;
+    bool aborted = false;
     while(true){
-
         current_weight = max(weight.get_units(), (float) 0);
         float ready = current_weight / ammount;
 
@@ -149,13 +153,16 @@ bool Dispenser::dispense(float ammount){
         display -> draw_rect(1, FONT_HEIGHT * 2 + 4, display -> width - 2, 6);
         display -> draw_rect(3, FONT_HEIGHT *2  + 6, floor((display -> width - 5) * ready), 2);
         if(changing_spd == 0)
-            display -> print("Hold to abort", 0, display -> height - FONT_HEIGHT);
+            display -> print("Click to abort", 0, display -> height - FONT_HEIGHT);
         else
             display -> print("Speed: " + String(values -> feed_speed), 0, display -> height - FONT_HEIGHT);
 
         Encoder_data enc_data = encoder -> get_updates();
-        if(enc_data.clicks != 0)
+        if(enc_data.clicks != 0){
+            Serial.println("Dispensing aborted");
+            aborted = true;
             break;
+        }
         if(enc_data.turns != 0){
             changing_spd = millis();
             values -> feed_speed = max(min(
@@ -170,19 +177,39 @@ bool Dispenser::dispense(float ammount){
             changing_spd = 0;
 
         display -> show();
+
+        if(ammount - current_weight < DISPENSING_STOP_DIFFERENCE)
+            break;
     }
 
     if(init_spd != values -> feed_speed)
         values -> save();
-
+    
+    Serial.println("done");
     vTaskDelete(func);
     stop_mixer();
     stop_auger();
 
-    return true;
+    current_weight = weight.get_units();
+    display -> clear();
+    if(aborted)
+        display -> print("Aborted at:\n" + String(current_weight));
+    else{
+        display -> print("Done: " + String(current_weight));
+        if(abs(ammount - current_weight) > DISPENSING_PRECISION)
+            display -> print("Error: " + String(abs(ammount - current_weight)), 0, FONT_HEIGHT + 2);
+    }
+    display -> show();
+
+    delay(2000);
+
+    return aborted;
 }
 
 void Dispenser::clean(){
+    start_mixer();
+    start_auger(- values -> feed_speed * 0.5);
+
     while(true){
         display -> clear();
         display -> print("Cleaning...");
@@ -193,6 +220,27 @@ void Dispenser::clean(){
         if(enc_data.clicks != 0)
             break;
     }
+
+    stop_auger();
+    stop_mixer();
+}
+
+void Dispenser::mix(){
+    display -> clear();
+    display -> print("Press to stop");
+    display -> show();
+
+    start_mixer();
+
+    while (true){
+        Encoder_data enc_data = encoder -> get_updates();
+        if(enc_data.clicks != 0)
+            break;
+        
+        delay(1);
+    }
+
+    stop_mixer();
 }
 
 void Dispenser::restore(){

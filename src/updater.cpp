@@ -1,91 +1,24 @@
 #include "updater.h"
 
-bool uploading = false, complete = false;
-uint32_t size;
-String name;
-
-String humanReadableSize(const size_t bytes) {
+String human_readable_size(const size_t bytes) {
   if (bytes < 1024) return String(bytes) + " B";
   else if (bytes < (1024 * 1024)) return String(bytes / 1024.0) + " KB";
   else if (bytes < (1024 * 1024 * 1024)) return String(bytes / 1024.0 / 1024.0) + " MB";
   else return String(bytes / 1024.0 / 1024.0 / 1024.0) + " GB";
 }
 
-void listFiles(){
-    Serial.println("----------------\nFiles:");
-    String res = "";
-    File root = SPIFFS.open("/");
-    File foundfile = root.openNextFile();
-    while(foundfile){
-        res += String(foundfile.name()) + "\n";
-        foundfile = root.openNextFile();
-    }
-    root.close();
-    foundfile.close();
-
-    Serial.println(res);
-    Serial.println("----------------");
-}
-
-String processor_callback(const String& var) {
-    if(var == "UPLOAD_PAGE"){
-        if(!complete)
-            return String(upload_page);
-        else
-            return String(complete_page);
-    }
-
-    if (var == "FREESPIFFS")
-        return humanReadableSize((SPIFFS.totalBytes() - SPIFFS.usedBytes()));
-
-    if (var == "USEDSPIFFS")
-        return humanReadableSize(SPIFFS.usedBytes());
-
-    if (var == "TOTALSPIFFS")
-        return humanReadableSize(SPIFFS.totalBytes());
-
-    return String();
-}
-
-void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-    if(!index){
-        request -> _tempFile = SPIFFS.open("/" + filename, "w");
-        uploading  = true;
-        Serial.println("---------------------------");
-        Serial.println("Upload started: " + filename);
-    }
-    if(len){
-        request -> _tempFile.write(data, len);
-        size = index + len;
-        Serial.println("Progress:" + String(index) + "   " + String(len));
-    }
-    if(final){
-        request -> _tempFile.close();
-        request -> redirect("/");
-        complete = true;
-        size = index + len;
-        name = filename;
-        Serial.println("Upload complete: " + String(size));
-        Serial.println("---------------------------");
-
-        listFiles();
-    }
-}
-
 void Client_updater::init_display(Display_SH1106 *display_){
     display = display_;
 }
 
-void Client_updater::start_upload(){
+void Client_updater::display_info(String text){
     display -> clear();
-    display -> print("preparing...\nIt may take\na while");
+    display -> print(text);
     display -> show();
+}
 
-    SPIFFS.begin(true);
-
-    Serial.print("formating SPIFFS... ");
-    SPIFFS.format();
-    Serial.println("done");
+void Client_updater::start_upload(){
+    display_info("preparing...");
 
     Serial.println("Starting webserver...");
     WiFi.softAP(HOST_SSID, HOST_PASSWORD);
@@ -95,111 +28,82 @@ void Client_updater::start_upload(){
     Serial.println("     IP:" + page_ip);
     Serial.println("-----------------------");
 
-    server = new AsyncWebServer(WEB_SERVER_PORT);
+    if (!MDNS.begin(MDNS_NAME)){
+        Serial.println("ERROR: setting up MDNS responder");
+        display_info("Failed create server");
 
-    server -> on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-        request -> send_P(200, "text/html", index_html, processor_callback);
+        delay(1000);
+        return;
+    }
+
+    WebServer server(WEB_SERVER_PORT);
+    
+    Serial.println("Server created");
+    display_info(page_ip + "\nWaiting a file");
+
+
+    server.on("/", HTTP_GET, [&server]() {
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/html", loginIndex);
     });
-    server -> on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-        request -> send(200);
-    }, handleUpload);
 
-    server -> begin();
-    Serial.println("Started");
+    server.on("/serverIndex", HTTP_GET, [&server]() {
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/html", serverIndex); 
+    });
 
-    display -> clear();
-    display -> print(page_ip);
-    display -> show();
-    
-    while(!complete){
-        display -> clear();
-        if(uploading){
-            display -> print("Uploading:\n" + humanReadableSize(size));
+    server.on("/update", HTTP_POST, [&server]() {
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+        ESP.restart();
+    }, [&server, this](){
+        HTTPUpload& upload = server.upload();
+
+        if(upload.status == UPLOAD_FILE_START){
+            Serial.println("Recieving file: " +  String(upload.filename));
+            if (!Update.begin(UPDATE_SIZE_UNKNOWN)){
+                Serial.println("ERROR: update begin failed    CODE: " + String(Update.getError()));
+                display_info("Upload failed");
+
+                delay(1000);
+                exit = true;
+                return;
+            }
+            Serial.println(">>>" + human_readable_size(upload.totalSize));
+        } 
+        if(upload.status == UPLOAD_FILE_WRITE){
+            Update.write(upload.buf, upload.currentSize);
+
+            display_info("Uploading:\n" + human_readable_size(upload.currentSize));
+        } 
+        if(upload.status == UPLOAD_FILE_END){
+            if (!Update.end(true)) {
+                Serial.println("ERROR: updload ended incorrectly    CODE: " + String(Update.getError()));
+                display_info("Upload failed");
+
+                delay(1000);
+                exit = true;
+                return;
+            } 
+
+            Serial.println("Updated successfully! (" + human_readable_size(upload.totalSize) + ")");
+            display_info("Completed!\nRestarting...");
+            delay(1000);
+
+            exit = true;
+            success = true;
         }
-        else{
-            display -> print(page_ip + "\nwaiting file\nClick to abort");
-        }
-        display -> show();
+    });
+
+    server.begin();
+
+    exit = false;
+    success = false;
+    while(!exit){
+        server.handleClient();
+        delay(1);
     }
 
-    display -> clear();
-    display -> print("Completed\n" + name + "\nRestarting...");
-    display -> show();
-
-    values -> firmware_update = true;
-    values -> save();
-
-    delay(1000);
-
-    ESP.restart();
-}
-
-void Client_updater::check_updates(){
-    if(!values -> firmware_update)
-        return;
-    
-    display -> clear();
-    display -> print("Found update...");
-    display -> show();
-
-    Serial.println("Firmware updating started");
-
-    SPIFFS.begin(true);
-    File root = SPIFFS.open("/");
-    File firmware = root.openNextFile();
-    bool found = false;
-    while(firmware){
-        if(String(firmware.name()) != "firmware.bin")
-            firmware = root.openNextFile();
-        else{
-            found = true;
-            break;
-        }
-    }
-    if(!found){
-        display -> clear();
-        display -> print("firmware.bin\nnot found");
-        display -> show();
-        Serial.println("ERROR: firmware.bin not found, update failed");
-
-        delay(1000);
-        return;
-    }
-    root.close();
-
-    size_t file_size = firmware.size();
-
-    if(!Update.begin(file_size)){
-        display -> clear();
-        display -> print("Update failed");
-        display -> show();
-        Serial.println("ERROR: cannot initialize update");
-
-        delay(1000);
-        return;
-    }
-
-    display -> clear();
-    display -> print("Updating...");
-    display -> show();
-    Update.writeStream(firmware);
-
-    if(Update.end()){
-        display -> clear();
-        display -> print("Updated!");
-        display -> show();
-        Serial.println("Firmware updated sucessfuly");
-    }
-    else{
-        display -> clear();
-        display -> print("Update failed");
-        display -> show();
-        Serial.println("ERROR: update write stream failed    CODE: " + String(Update.getError()));
-    }
-
-    firmware.close();
-    values -> firmware_update = false;
-    values -> save();
-    
-    ESP.restart();
+    if(success)
+        ESP.restart();
 }

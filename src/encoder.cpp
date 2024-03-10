@@ -39,11 +39,21 @@ void Encoder::tick(){
 };
 
 void Encoder::tick_button(){
-    if(click_time_filter + 100 >= millis())
+    if(!digitalRead(sw_pin)){
+        if(click_start == 0)
+            click_start = millis();
+        return;
+    }
+
+    if(millis() - click_time_filter <= 100)
         return;
     click_time_filter = millis();
 
+    if(click_start == 0 || millis() - click_start < 20)
+        return;
+
     click = true;
+    click_start = 0;
 }
 
 Encoder_data Encoder::get_updates(){
@@ -52,10 +62,21 @@ Encoder_data Encoder::get_updates(){
         response.turns += get_rotation(buffer[i][0], buffer[i][1]);
     response.clicks += click;
 
+    response.turns += forced_turns;
+    forced_turns = 0;
+
     buff_size = 0;
     click = false;
 
     return response;
+}
+
+void Encoder::force_button(bool state){
+    click = state;
+}
+
+void Encoder::force_tick(int8_t turns){
+    forced_turns = turns;
 }
 
 Encoder_data Encoder::get_updates_normalized(){

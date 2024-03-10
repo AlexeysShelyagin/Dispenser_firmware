@@ -24,7 +24,9 @@ class Encoder{
 
     bool ready_to_read = true;
 
-    uint64_t tick_time_filter = 0, click_time_filter = 0;
+    int8_t forced_turns = 0;
+
+    uint64_t tick_time_filter = 0, click_time_filter = 0, click_start = 0;
 
     int get_rotation(bool v1, bool v2);
     bool get_click(bool val);
@@ -37,6 +39,9 @@ public:
 
     Encoder_data get_updates();
     Encoder_data get_updates_normalized();
+
+    void force_button(bool state = true);
+    void force_tick(int8_t turns);
 };
 
 #endif

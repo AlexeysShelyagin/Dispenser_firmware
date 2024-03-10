@@ -53,6 +53,7 @@ public:
 
     bool dispense(float ammount);
     void clean();
+    void mix();
 
     void restore();
 };

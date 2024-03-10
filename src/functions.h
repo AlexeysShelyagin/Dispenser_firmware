@@ -59,6 +59,7 @@ class Function_container{
     void func7();
     void func8();
     void func9();
+    void func10();
     
 public:
     Window* window;
